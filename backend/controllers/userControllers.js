@@ -2,16 +2,33 @@ const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel");
 const generateToken = require("../config/generateToken");
 const UserVerify = require("../models/userVerify.models.js");
+const jwt = require('jsonwebtoken');
 
 //for email verification
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 
 
+// Create the transporter outside the function
+const transporter = nodemailer.createTransport({
+  service:'gmail',
+  auth: {
+    user:process.env.EMAIL_USER,
+    pass:process.env.EMAIL_PASS,
+  },
+});
+
+//function to generate opt(will use this in this file only)
+const generateOtp = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+
+
 //@description     Get or Search all users
 //@route           GET /api/user?search={some person to search}
 //@access          Public
-const allUsers = asyncHandler(async (req, res) => {
+exports.allUsers = asyncHandler(async (req, res) => {
   const keyword = req.query.search
     ? {
         $or: [
@@ -28,64 +45,82 @@ const allUsers = asyncHandler(async (req, res) => {
 //@description     Register new user
 //@route           POST /api/user/
 //@access          Public
-const registerUser = asyncHandler(async (req, res) => {
-    const { name, email, password, pic } = req.body;
-  
-    if (!name || !email || !password) {
-      res.status(400);
-      throw new Error("Please enter all the fields");
-    }
-  
-    // Check if user already exists
-    const userExists = await User.findOne({ email });
-  
-    if (userExists) {
-      if (!userExists.isVerified) {
-                // If the user exists but hasn't verified their email, resend verification email
-                await sendVerificationEmail(userExists, req, res);
-        
-                return res.status(200).json({  //just return from here only, else agar next lines me gaya, then phir se sendVerificationEmail funciton call ho jaayega
-                  message: "User already exists but email is not verified. Verification email resent. Please verify your email.",
-                  email: userExists.email,  // Include email in the response
-                });
-        
+exports.signup = asyncHandler(async (req, res) => {
+  const { name, email, password , pic } = req.body;
+
+  if (!name || !email || !password) {
+    res.status(400);
+    throw new Error("Please enter all the fields");
+  }	
+
+  try {
+
+    // Check if the user already exists
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      // If the user is verified, throw an error
+      if (existingUser.isVerified) {
+        return res.status(400).json({ message: 'Account already exists,Please Login' });  //since, status 400 se bheja hu, so , receiving end me catch block me jaayega and toast will be shown with the description of this message
       } else {
-        // User exists and is verified
-        res.status(400);
-        throw new Error("User already exists");
+        // If the user is not verified, allow the signup process and resend OTP
+        const otp = generateOtp();  //in this file 
+        
+        existingUser.otp = otp;
+        existingUser.name = name; // Update user data with the latest info if necessary
+        existingUser.password = password; // Note: hashing should still be handled before save
+        await existingUser.save();
+        
+        // Resend OTP via email
+        await transporter.sendMail({
+          from:process.env.EMAIL_USER,
+          to:email,
+          subject: 'Resend OTP for Account Verification',
+          text: `Your OTP is ${otp}`,
+        });
+        return res.status(200).json({ 
+          message: 'User exists but is not verified. OTP has been resent.',
+          email : existingUser.email 
+        });
       }
     }
-  
-    // Create a new user
-    const user = await User.create({
-      name,
-      email,
-      password,
-      pic,
+    //if abhi tak return nhi hua hai,then user doesn't exist
+    // If the user doesn't exist, proceed with creating a new one
+    const user = await User.create({ name, email, password,pic });
+    const otp = generateOtp();
+    user.otp = otp;
+    await user.save();
+
+    // Send OTP via email
+    await transporter.sendMail({
+      from:process.env.EMAIL_USER,
+      to:email,
+      subject: 'Verify your account',
+      text: `Your OTP is ${otp}`,
     });
-  
-    if (user) {
-      // Send verification email after successful registration
-      await sendVerificationEmail(user, req, res);
-      res.status(201).json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        isAdmin: user.isAdmin,
-        pic: user.pic,
-        token: generateToken(user._id),
-        message: "Registration successful. Please verify your email.",
-      });
-    } else {
-      res.status(400);
-      throw new Error("User not found");
-    }
+
+    res.status(201).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      pic: user.pic,
+      token: generateToken(user._id),
+      message: "Registration successful. Please verify your email.",
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Server error' });
+  }
   });
+
+
+  
 
 //@description     Auth the user
 //@route           POST /api/users/login
 //@access          Public
-const authUser = asyncHandler(async (req, res) => {
+exports.login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
@@ -110,124 +145,132 @@ const authUser = asyncHandler(async (req, res) => {
 });
 
 
+//-------
 
-//@description     Send verification email
-//@route           POST /api/user/send-verification-email
-//@access          Public
-const sendVerificationEmail = asyncHandler(async (user, req, res) => {
-  const token = crypto.randomBytes(32).toString("hex");
+// //@description     Send verification email
+// //@route           POST /api/user/send-verification-email
+// //@access          Public
+// const sendVerificationEmail = asyncHandler(async (user, req, res) => {
+//   const token = crypto.randomBytes(32).toString("hex");
   
 
-  await UserVerify.create({
-    userId: user._id,
-    token: token,
-  });
+//   await UserVerify.create({
+//     userId: user._id,
+//     token: token,
+//   });
 
-  // Send email
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,  // Your email
-      pass: process.env.EMAIL_PASS,  // Your email passkey of the app(can be seen by searching app pass... in the gmail manage (but, this option can only be seen after doing 2 step verification.))
-    },
-  });
+//   // Send email
+//   const transporter = nodemailer.createTransport({
+//     service: "gmail",
+//     auth: {
+//       user: process.env.EMAIL_USER,  // Your email
+//       pass: process.env.EMAIL_PASS,  // Your email passkey of the app(can be seen by searching app pass... in the gmail manage (but, this option can only be seen after doing 2 step verification.))
+//     },
+//   });
 
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: user.email,
-    subject: "Email Verification",
-    html: `<h2>Please verify your email</h2>
-           <p>Click <a href="https://chatappfull.onrender.com/${token}">here</a> to verify your email.</p>`,
-  };
+//   const mailOptions = {
+//     from: process.env.EMAIL_USER,
+//     to: user.email,
+//     subject: "Email Verification",
+//     html: `<h2>Please verify your email</h2>
+//            <p>Click <a href="https://chatappfull.onrender.com/${token}">here</a> to verify your email.</p>`,
+//   };
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log(error);
-      res.status(500).json({ error: "Email could not be sent" });
-    } else {
-      res.status(200).json({ message: "Verification email sent" });
+//   transporter.sendMail(mailOptions, (error, info) => {
+//     if (error) {
+//       console.log(error);
+//       res.status(500).json({ error: "Email could not be sent" });
+//     } else {
+//       res.status(200).json({ message: "Verification email sent" });
+//     }
+//   });
+// });
+
+//-------
+
+
+
+
+// Verify OTP
+exports.verifyOtp = async (req, res) => {
+  const { email, otp } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user || user.otp !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
     }
-  });
-});
-
-
-
-//@description     Verify user email
-//@route           GET /api/user/verify-email/:token
-//@access          Public
-const verifyEmail = asyncHandler(async (req, res) => {
-  console.log("hello");
-  const { token } = req.params;
-  console.log(token);
-  console.log("hellow");
-
-  // Find the verification record based on the token
-  const verifyRecord = await UserVerify.findOne({token});
-  console.log(verifyRecord);
-
-  if (!verifyRecord) {
-    // If the token is invalid or expired, redirect to the NotSucEmail page
-    console.log("verifyRecord me c");
-    console.log(`${process.env.FRONTEND_URL}`);
-    res.redirect(`${process.env.FRONTEND_URL}/NotSucEmail`);
+    user.isVerified = true;
+    user.otp = undefined; // Clear OTP after verification
+    await user.save(); //so, document of this user will be modified (isVerified will be true)
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
+    res.status(200).json({ token, message: 'Account verified' });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
   }
-  console.log(`.env wala is ${process.env.FRONTEND_URL}`);
-  // Find the user associated with the token
-  const user = await User.findById(verifyRecord.userId);
-  console.log(`user is ${user}`);
-
-  if (!user) {
-    // If the user is not found, redirect to the NotSucEmail page
-    res.redirect(`${process.env.FRONTEND_URL}/NotSucEmail`);
-    console.log("incorrect tha");
-  }
-
-  // Mark the user as verified
-  user.isVerified = true;
-  await user.save();
-
-  // Delete the verification record
-  await UserVerify.findByIdAndDelete(verifyRecord._id);  //deleting the id will delete this document of this user.
-
-  // Redirect to the SuccessEmail page
-  console.log("abhi redirect karne wala hu");
-  res.redirect(`${process.env.FRONTEND_URL}/SuccessEmail`);
-});
+};
 
 
 
-
-//@description     Resend verification email
+//@description     Resend  otp
 //@route           POST /api/user/resend-verification
 //@access          Public
 
-const resendVerificationEmail = asyncHandler(async (req, res) => {
-  const { email } = req.body;  //this is the reason , we passed the email(in the signup page while redirecting and then , useLocation used in the EmailVerificaiton.js and sent the email object to this api call )
 
-  if (!email) {
-    return res.status(400).json({ message: "Please provide an email" });
-  }
+//resend otp
+exports.resendOtp = async (req, res) => {
+    const { email } = req.body;
+    try {
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(400).json({ message: 'User not found' });
+      }
+      //else
+      const otp = generateOtp();
+      console.log(otp);
+      user.otp = otp;
+      await user.save();
+  
+      // Send OTP via email
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: 'Resend OTP for Account Verification',
+        text: `Your OTP is ${otp}`,
+      });
+  
+      res.status(200).json({ message: 'OTP resent successfully' });
+    } catch (error) {
+      res.status(500).json({ error: 'Server error' });
+    }
+  };
+  
 
-  const user = await User.findOne({ email });
-
-  if (!user) {
-    return res.status(400).json({ message: "User not found" });
-  }
-
-  if (user.isVerified) {
-    return res.status(400).json({ message: "This account is already verified." });
-  }
-
-  try {
-    await sendVerificationEmail(user, req, res);
-    return res.status(200).json({  //use return in each response
-      message: "Verification email has been resent. Please check your inbox.",
-    });
-  } catch (error) {
-    return res.status(500).json({ message: "Failed to send verification email" });  //use return in each response, so that, ek controller multiple responses send na kar de(for a request, aisa hone se error aata hai and the app can crash)
-  }
-});
 
 
-module.exports = { allUsers, registerUser, authUser, sendVerificationEmail, verifyEmail , resendVerificationEmail};
+  exports.updatePic=asyncHandler(async(req,res)=>{
+    console.log("inside update pic")
+    const { pic } = req.body; // Expecting a JSON object like { pic: "https://..." }
+    
+    if (!pic) {
+      res.status(400);
+      throw new Error("No picture URL provided");
+    }
+
+    const user = await User.findById(req.user._id);  //req.user is not passed from the frontend ,but ,it is passed by protect middleware(req.user is created in protect middleware when we did next() ,then since,this updatePic controller follows it ,so,req.user can be used by it .)
+    if (user) {
+      
+      user.pic = pic; // Update the user's profile picture URL
+      await user.save();
+      res.json({
+        message: "Profile picture updated successfully",
+        pic: user.pic,
+      });
+    } else {
+      console.log("hello")
+      res.status(404);
+      
+      throw new Error("User not found");
+    }
+  })
+
 

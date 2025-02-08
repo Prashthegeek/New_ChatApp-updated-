@@ -63,7 +63,7 @@ const accessChat = asyncHandler(async (req, res) => {  //this function will come
 //@route           GET /api/chat/
 //@access          Protected
 const fetchChats = asyncHandler(async (req, res) => {  //fetching all the chats of the logged in user(including the group Chats and one on one chats on the left side(not the drawer part)) + also need to show the latest message down to every Chat
-
+  
   try {
     // Chat.find({ users: { $elemMatch: { $eq: req.user._id } } })  //logged in user is req.user._id , find returns an array (containing the documents satisfying the conditions, now, manipulate/populate the array with the things you want) 
     //   .populate("users", "-password")
@@ -77,7 +77,7 @@ const fetchChats = asyncHandler(async (req, res) => {  //fetching all the chats 
     //     });
     //     res.status(200).send(results);
     //   });
-
+  
     Chat.find({ users: { $elemMatch: { $eq: req.user._id } } })   ////logged in user is req.user._id , find returns an array (containing the documents satisfying the conditions, now, manipulate/populate the array with the things you want to display on the AllChats left side page on the frontend) 
   .populate({
     path: 'users',

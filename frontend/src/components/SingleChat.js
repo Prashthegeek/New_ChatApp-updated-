@@ -1108,7 +1108,8 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         prevMessages.map((msg) =>
           msg._id === messageId ? { ...msg, isDeleted: true } : msg
         )
-      );  
+      ); 
+      setFetchAgain((prev)=> !prev) ;//whatever is the current value of fetchAgain , just toggle it ,paramter inside the setter func holds the current value of the state,used becoz of concept of lifting state up , parent component of chatPage will re-render ,so child components(mychats ->left side wala and chatBox->right side wala bhi re-render karega,my main aim was to re-render the left side wala)    
     })
     return () => {
       socketRef.current.off("typing");
@@ -1123,11 +1124,11 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     if (!selectedChat || selectedChat._id !== newMessageReceived.chat._id) {
       if (!notification.includes(newMessageReceived)) {
         setNotification([newMessageReceived, ...notification]);
-        setFetchAgain(!fetchAgain);
       }
     } else {
       setMessages(prev => [...prev, newMessageReceived]);
     }
+    setFetchAgain((prev)=> !prev) ;//whatever is the current value of fetchAgain , just toggle it ,paramter inside the setter func holds the current value of the state,used becoz of concept of lifting state up , parent component of chatPage will re-render ,so child components(mychats ->left side wala and chatBox->right side wala bhi re-render karega,my main aim was to re-render the left side wala)
   };
 
   // Add emoji to message
@@ -1204,6 +1205,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         isClosable: true,
       });
       return;
+    
     }
 
     try {
@@ -1233,6 +1235,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
       socketRef.current.emit("new message", data);
       setMessages(prev => [...prev, data]);
+      setFetchAgain((prev)=> !prev) ;//whatever is the current value of fetchAgain , just toggle it ,paramter inside the setter func holds the current value of the state,used becoz of concept of lifting state up , parent component of chatPage will re-render ,so child components(mychats ->left side wala and chatBox->right side wala bhi re-render karega,my main aim was to re-render the left side wala)
     } catch (error) {
       toast({
         title: "Error sending message",
@@ -1341,6 +1344,9 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                 socket={socketRef.current}    //sending the instance of the socketRef(becoz ,unnecessary render nhi hoga and consistency bana rahega),so,scrollable chat can also use it ,used there in delete message emit event , 
                 selectedChat={selectedChat}    //while emiting the deletemessage event to the server ,server ko hum log also send the current chat id ,since, server usi room(selected chat ) me delete message event transfer karega to all the user/users ,kyuki server is centralized ,it dont know which room ka message we are deleting and we also dont have selected chat variable in scrollable chat 
                 //all these props will be sent as a whole in the form of object, so, while receiving the props in scrollable chat ,we would destructure them with the same key name as mentioned here (since, object )
+                fetchAgain={fetchAgain}
+                setFetchAgain={setFetchAgain}
+                //sent fetchAgain and setFetchAgain ,becoz,when the message successfully deleted ,then for the current user ,fetchAgain ko update kar do,so,chatPage  re-render karega and hence -> chatBox and mychats dono me updation hoga ,concept of lifting state up(askify notes me study )
                 />
               </Box>
             )}

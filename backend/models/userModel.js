@@ -12,7 +12,7 @@ const userSchema = mongoose.Schema(
       default:
         "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg",
     },
-    isAdmin: {  //shouldn't it store some arrays of group , which he is an admin
+    isAdmin: {  //shouldn't it store some arrays of group , which he is an admin , afterwards ->i think it is about if the person is app developer or not)
       type: Boolean,
       required: true,
       default: false,
@@ -22,6 +22,11 @@ const userSchema = mongoose.Schema(
       required: true,
       default: false,  // User needs to verify their email
     },
+    otp:{
+      type :String,
+      required: false,
+      default: null,
+    }
   },
   { timestaps: true }
 );

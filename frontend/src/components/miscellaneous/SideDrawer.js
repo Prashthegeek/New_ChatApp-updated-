@@ -58,6 +58,8 @@ function SideDrawer() {
 
   const logoutHandler = () => {
     localStorage.removeItem("userInfo");
+    localStorage.removeItem("token");
+
     history.push("/");  //redirect him to the homepage(see the router, in frontend , /means login/signup page (homepage component))
   };
 

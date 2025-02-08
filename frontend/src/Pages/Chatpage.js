@@ -22,6 +22,8 @@ const Chatpage = () => {
   );
 };
 
+//fetchAgain and setFetchAgain is only sent as a prop so,that lifting state  up concept  ka fayda utha saku ,due to which MYchats (left side ka compennt) re-render kare and hence when messages are transferred during conversation ,left side me bhi dikhega ki kaun kya message bheja and who deleted the messagte. 
+
 export default Chatpage;
 
 

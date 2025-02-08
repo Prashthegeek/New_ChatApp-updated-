@@ -1427,7 +1427,7 @@ const checkMediaFile = (filePath) => {
 };
 
 
-const handleDelete = async (messageId, setMessages,socket,selectedChat) => {              
+const handleDelete = async (messageId, setMessages,socket,selectedChat,fetchAgain,setFetchAgain) => {              
   try {
     
     const res = await axios.delete(`http://localhost:5000/api/message/${messageId}` );
@@ -1448,6 +1448,8 @@ const handleDelete = async (messageId, setMessages,socket,selectedChat) => {
         msg._id === messageId ? { ...msg, isDeleted: true } : msg
       )});
 
+      setFetchAgain((prev)=> !prev) ;//whatever is the current value of fetchAgain , just toggle it ,paramter inside the setter func holds the current value of the state,used becoz of concept of lifting state up , parent component of chatPage will re-render ,so child components(mychats ->left side wala and chatBox->right side wala bhi re-render karega,my main aim was to re-render the left side wala)
+
       socket.emit("message deleted",{messageId , chatId:selectedChat._id})  //selectedChat is an whole object (mychat.js me jaakar dekh lo)
   } catch (error) {
     console.log("message cannot be deleted", error.message)
@@ -1464,7 +1466,9 @@ const MessageItem = memo(({   //receive the props
   onImageClick ,
   setMessages,
   socket,
-  selectedChat
+  selectedChat,
+  fetchAgain,
+  setFetchAgain
 }) => {
   // Use the function directly
   const { isImage, isVideo } = checkMediaFile(message.file);    //destructure the object returned by checkMediaFile function
@@ -1535,8 +1539,7 @@ const MessageItem = memo(({   //receive the props
                       right={2}
                       bg="gray.200"
                       _hover={{ bg: "red.200" }}
-                      onClick={() => handleDelete(message._id, setMessages,socket,selectedChat)}
-                      aria-label="Delete message"
+                      onClick={() => handleDelete(message._id, setMessages,socket,selectedChat,fetchAgain,setFetchAgain)}                      aria-label="Delete message"
                     />
                   )}
                 </Box>
@@ -1566,8 +1569,7 @@ const MessageItem = memo(({   //receive the props
                       right={2}
                       bg="gray.200"
                       _hover={{ bg: "red.200" }}
-                      onClick={() => handleDelete(message._id, setMessages,socket,selectedChat)}
-                      aria-label="Delete message"
+                      onClick={() => handleDelete(message._id, setMessages,socket,selectedChat,fetchAgain,setFetchAgain)}                      aria-label="Delete message"
                     />
                   )}
                 </Box>
@@ -1585,7 +1587,7 @@ const MessageItem = memo(({   //receive the props
                     size="xs"
                     bg="gray.200"
                     _hover={{ bg: "red.200" }}
-                    onClick={() => handleDelete(message._id, setMessages,socket,selectedChat)}
+                    onClick={() => handleDelete(message._id, setMessages,socket,selectedChat,fetchAgain,setFetchAgain)}
                     aria-label="Delete message"
                   />
                 )}
@@ -1611,7 +1613,7 @@ const MessageItem = memo(({   //receive the props
   );
 });
 
-const ScrollableChat = ({ messages , setMessages , socket , selectedChat}) => {   //messages is an array (containing all the messages of this chat , and each element of the messages array is an obj (and each obj has multiple fields like sender , timestamp , isDeleted , etc ,ie. all those things defined inside the messages schema)) , here destructuring the props object with the same key name sent from there (since, props is object)
+const ScrollableChat = ({ messages , setMessages , socket , selectedChat,fetchAgain,setFetchAgain }) => {   //messages is an array (containing all the messages of this chat , and each element of the messages array is an obj (and each obj has multiple fields like sender , timestamp , isDeleted , etc ,ie. all those things defined inside the messages schema)) , here destructuring the props object with the same key name sent from there (since, props is object)
   const { user } = ChatState();
   const bottomRef = useRef(null);
   const toast = useToast();
@@ -1676,6 +1678,8 @@ const ScrollableChat = ({ messages , setMessages , socket , selectedChat}) => { 
             setMessages={setMessages} //if this is not passed ,then MessageItem component cant use it 
             socket={socket}
             selectedChat={selectedChat}  //will use socket nad selectedchat for delete message event emit in handle delete function which is called from the MessageItem component
+            fetchAgain={fetchAgain}
+            setFetchAgain={setFetchAgain}
           />
         ))
       )}

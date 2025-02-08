@@ -1,12 +1,14 @@
 import { Button } from "@chakra-ui/button";
 import { FormControl, FormLabel } from "@chakra-ui/form-control";
 import { Input, InputGroup, InputRightElement } from "@chakra-ui/input";
-import { VStack } from "@chakra-ui/layout";
+import { Flex, Text, VStack } from "@chakra-ui/layout";
 import { useState } from "react";
 import axios from "axios";
-import { useToast } from "@chakra-ui/react";
+import { Image, useToast } from "@chakra-ui/react";
 import { useHistory } from "react-router-dom";
 import { ChatState } from "../../Context/ChatProvider";
+import googleIcon from "../assets/google-icon.png"; //image of Google iconis  is in  the  assets folder 
+
 
 const Login = () => {
   const [show, setShow] = useState(false);
@@ -18,6 +20,13 @@ const Login = () => {
 
   const history = useHistory();
   const { User, setUser } = ChatState();
+
+
+  //for signup with google(oAuth)
+  const handleGoogleSignIn = () => {
+    // Redirect to the backend's Google OAuth endpoint
+    window.location.href = "http://localhost:5000/api/user/google";
+  };
 
   const submitHandler = async () => {
     setLoading(true);
@@ -56,7 +65,7 @@ const Login = () => {
       setLoading(false);
       setUser(data);
 
-      localStorage.setItem("userInfo", JSON.stringify(data));
+      localStorage.setItem("userInfo", JSON.stringify(data));   //data stored only after login , not even after signup ,after signup ,person comes to login ,and then information is stored in the storage.
    
       history.push("/chats");  //url changes and page reloads
     } catch (error) {
@@ -111,16 +120,36 @@ const Login = () => {
       >
         Login
       </Button>
+
+      
+      {/*Google auth */}
       <Button
-        variant="solid"
-        colorScheme="red"
-        width="100%"
-        onClick={() => {
-          setEmail("guest@example.com");
-          setPassword("123456");
+        onClick={handleGoogleSignIn}
+        bg="white"
+        color="gray.700"
+        border="1px solid #ddd"
+        boxShadow="md"
+        borderRadius="full"
+        py={3}
+        px={5}
+        fontSize="lg"
+        fontWeight="medium"
+        transition="all 0.3s"
+        _hover={{
+          bg: "gray.100",
+          transform: "translateY(-2px)",
+          boxShadow: "lg",
         }}
+        _active={{
+          bg: "gray.200",
+          transform: "scale(0.98)",
+          boxShadow: "sm",
+        }}
+        leftIcon={<Image src={googleIcon} boxSize="24px" />}
       >
-        Get Guest User Credentials
+        <Flex align="center">
+          <Text ml={2}>Sign in with Google</Text>
+        </Flex>
       </Button>
     </VStack>
   );

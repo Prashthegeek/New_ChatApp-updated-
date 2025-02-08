@@ -9,8 +9,8 @@ const SuccessEmail = () => {
       <Text fontSize="2xl" fontWeight="bold">
         Email Verified Successfully!
       </Text>
-      <Button colorScheme="blue" onClick={() => history.push("/login")}>
-        Go to Chat
+      <Button colorScheme="blue" onClick={() => history.push("/")}>
+        Go to Login
       </Button>
     </VStack>
   );

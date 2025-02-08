@@ -165,7 +165,7 @@ import GroupChatModal from "./miscellaneous/GroupChatModal";
 import { Button, Avatar, Flex } from "@chakra-ui/react";
 import { ChatState } from "../Context/ChatProvider";
 
-const MyChats = ({ fetchAgain }) => {
+const MyChats = ({ fetchAgain }) => {  //fetchAgain is accepted as a prop just becoz. lifting state up ka fayda utha saku,right side me socket ke through jaise jaise new messages listen and emit hoga ,i would toggle value of fetchAgain ,so,parent compoennt(chatPage will re-render and hence-> Mychats will also re-render ,becoz,of which new messages dekhne ko milega on left side like who sent the message and what is sent .even message deletion (successfully listen and emit, in the chatBox ke children)  ke baad bhi i toggled fetchAgain , due to which ,mychats component(which is the child of chatPage is re-rendred.,so, this message is deleted ka message bhi left side me sync me dekhne ko milega) )
   const [loggedUser, setLoggedUser] = useState();
 
   const { selectedChat, setSelectedChat, user, chats, setChats, notification, setNotification } = ChatState();
@@ -173,7 +173,7 @@ const MyChats = ({ fetchAgain }) => {
   const toast = useToast();
 
   const fetchChats = async () => {
-    if (!user || !user.token) {
+    if (!user) {
       toast({
         title: "User not authenticated",
         description: "Please log in to fetch your chats",
@@ -188,7 +188,7 @@ const MyChats = ({ fetchAgain }) => {
     try {
       const config = {
         headers: {
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${user.token}`,  //user from the one received from the context api(inside the context api,i already extracted the userInfo and token and exported them ,so other component can use them by destructuring informations from chatState() )
         },
       };
 
@@ -197,7 +197,7 @@ const MyChats = ({ fetchAgain }) => {
     } catch (error) {
       toast({
         title: "Error Occurred!",
-        description: "Failed to load the chats",
+        description: error.message,
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -207,7 +207,7 @@ const MyChats = ({ fetchAgain }) => {
   };
 
   useEffect(() => {
-    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+    const userInfo = JSON.parse(localStorage.getItem("userInfo"));   //redundant ,could have used user given to us from the contextapi
     if (!userInfo) {
       toast({
         title: "No user info found",
@@ -308,7 +308,8 @@ const MyChats = ({ fetchAgain }) => {
                             ? "You"
                             : chat.latestMessage.sender?.name || "Unknown Sender"}
                         </b>
-                        {": " + chat.latestMessage.content}  {/*to show real time change ,i need to re-render the component again and again,so,need to change some state involved inthis component. so,idea->update the chats state (part of this component) by emitting the event when  */}
+                        { " : " + (chat.latestMessage.isDeleted ?  " This message was deleted" : chat.latestMessage.content)
+                         }  {/*to show real time change ,i need to re-render the component again and again,so,need to change some state involved inthis component. so,idea->update the chats state (part of this component) by emitting the event when  */}
                       </Text>
                     ) : (
                       <Text fontSize="xs">
@@ -321,7 +322,9 @@ const MyChats = ({ fetchAgain }) => {
             })}
           </Stack>
         ) : (
-          <ChatLoading />
+          <Text fontSize="lg" fontWeight="semibold" color="gray.500" textAlign="center" mt={5}>
+            You haven't started any conversations yet! 🗨️  
+          </Text>
         )}
       </Box>
     </Box>

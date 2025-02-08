@@ -123,11 +123,21 @@ const messageRoutes = require("./routes/messageRoutes");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const path = require("path");
 
+
+//for oAuth
+const passportSetup = require('./config/passport-setup')   //even though isska koi use yaha nhi hai here,but, still it is necessary becoz 
+//for oAuth to work properly, so, when server.js runs ,then it requires passportSetup from passport-setup.js 
+//and which ultimately runs the googleStrategy inside the passport-setup.js
+const passport= require('passport');
+const session = require('express-session');  //better to use express-session than cookie session, just do changes in app.use(cookiesession)
+//part, baaki sab wahi rahega.
+
 dotenv.config({
   path: "./.env",
 });
 
 const app = express();
+
 
 app.use(cors({
   origin: "http://localhost:3000",
@@ -136,10 +146,34 @@ app.use(cors({
 
 app.use(express.json());
 
+
+
+
+//for o Auth
+
+// Middleware for sessions(must be above the routes declaration,so , routes can use passport session while oauth )
+app.use(session({
+  secret: 'aifuafjd', // Replace with a strong secret key
+  resave: false,      // Avoid saving session if it hasn't been modified
+  saveUninitialized: false, // Avoid saving empty sessions
+  cookie: {
+      maxAge: 24 * 60 * 60 * 1000, // 1 day in milliseconds
+      secure: process.env.NODE_ENV === 'docker' || process.env.NODE_ENV === 'production', // Set to true in docker or production
+  },
+}));
+app.use(passport.initialize());
+app.use(passport.session()); 
+
+
+
+
+//now, declare the routes (now,they can have the passport sessions,else problem hoga while login/signup with google)
 app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/message", messageRoutes);
 app.use('/uploads', express.static(path.join(__dirname,'../uploads')));
+
+
 
 
 // --------------------------deployment------------------------------
