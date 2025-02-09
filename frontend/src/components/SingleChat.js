@@ -1111,11 +1111,43 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
       ); 
       setFetchAgain((prev)=> !prev) ;//whatever is the current value of fetchAgain , just toggle it ,paramter inside the setter func holds the current value of the state,used becoz of concept of lifting state up , parent component of chatPage will re-render ,so child components(mychats ->left side wala and chatBox->right side wala bhi re-render karega,my main aim was to re-render the left side wala)    
     })
+
+    // socketRef.current.on("rename-group", ({chatId, newGroupName}) => {
+    //   // If this is our selected chat, update it
+    //   if (selectedChat && selectedChat._id === chatId) {
+    //     selectedChat.name = newGroupName;
+    //   }
+    //   // Always trigger a refresh to update MyChats
+    //   setFetchAgain(prev => !prev);
+    // });
+
+    socketRef.current.on("rename-group", ({ chatId,newGroupName, updatedChat, sender }) => {
+      if (selectedChat && selectedChat._id === chatId) {
+        // Update the entire chat object, not just the name
+        setSelectedChat(updatedChat);
+        
+        // Show toast notification
+        toast({
+          title: "Group Renamed",
+          description: `Group has been renamed to "${newGroupName}" by ${sender.name}`,
+          status: "info",
+          duration: 3000,
+          isClosable: true,
+          position: "bottom",
+        });
+        
+        
+      }
+      // Update the chat list so,name change also visible in mychats
+      setFetchAgain(prev => !prev);
+    });
+
     return () => {
       socketRef.current.off("typing");
       socketRef.current.off("stop typing");
       socketRef.current.off("message received");
-      socketRef.current.off("message deleted")
+      socketRef.current.off("message deleted");
+      socketRef.current.off("rename-group");
     };
   }, [selectedChat]);
 
@@ -1318,6 +1350,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                 fetchMessages={fetchMessages}
                 fetchAgain={fetchAgain}
                 setFetchAgain={setFetchAgain}
+                socket={socketRef.current}
               />
             ) : (
               <ProfileModal user={getSenderFull(user, selectedChat.users)} />

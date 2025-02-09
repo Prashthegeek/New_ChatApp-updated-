@@ -281,6 +281,21 @@ const startServer = async () => {
         socket.to(chatId).emit("message deleted" , {messageId}) ; //we dont'even need to send the chatId to the other users (since, usska jarurat nahi parega while updating the ui of the other person), chatId ka jarurat kewal server ko hi tha (since, server is centralized ,so it needs to know which chat ka which message we want to delete ) , .to(chatId).emit(...) me jarurat para only .
       })
 
+
+      socket.on('rename-group', ({chatId, newGroupName,updatedChat,sender}) => {
+        // Broadcast to everyone, not just people in the chat
+        socket.broadcast.emit("rename-group", {chatId, newGroupName,updatedChat,sender});
+      });
+
+      // socket.on('rename-group', ({ chatId, newGroupName, updatedChat, sender }) => {
+      //   // Broadcast to all users in the chat except the sender
+      //   socket.to(chatId).emit("rename-group", {
+      //     newGroupName,
+      //     updatedChat,
+      //     sender
+      //   });
+      // });
+
       socket.on("disconnect", () => {
         console.log("Client disconnected:", socket.id);
       });

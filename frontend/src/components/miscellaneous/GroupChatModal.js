@@ -311,7 +311,7 @@ const GroupChatModal = ({ children }) => {
       const { data } = await axios.post(
         `/api/chat/group`,
         {
-          name: groupChatName,
+          name: groupChatName,   //body me bhej rahe hai.
           users: JSON.stringify(
             selectedUsers.map((u) => u._id)
           ),
@@ -319,6 +319,7 @@ const GroupChatModal = ({ children }) => {
         config
       );
       setChats([data, ...chats]);
+      console.log("data is ",data)
       onClose();
       toast({
         title: "New Group Chat Created!",
@@ -327,10 +328,12 @@ const GroupChatModal = ({ children }) => {
         isClosable: true,
         position: "bottom",
       });
+      setSelectedUsers([]);
+      setSearchResult([]);
     } catch (error) {
       toast({
         title: "Failed to Create the Chat!",
-        description: error.response.data,
+        description: error.response?.data,
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -394,8 +397,10 @@ const GroupChatModal = ({ children }) => {
               {selectedUsers.map((u) => (
                 <UserBadgeItem
                   key={u._id}
-                  user={u}
+                  u={u}
                   handleFunction={() => handleDelete(u)}
+                  admin={user}
+                  user={user}
                 />
               ))}
             </Box>

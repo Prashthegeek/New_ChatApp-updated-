@@ -118,7 +118,7 @@ const createGroupChat = asyncHandler(async (req, res) => {
     return res.status(400).send({ message: "Please Fill all the feilds" });
   }
 
-  var users = JSON.parse(req.body.users);  //converts users into javascript array(why not object? Becoz, req.body.users is the list or the array of users whom i want to add in the group ), so , var users is an javascript array instead of an array
+  var users = JSON.parse(req.body.users);  //firstly->created req.body.users from protect middleware ,after next() ,all the next controllers can use it ,so,i am using it here,  converts users into javascript array(why not object? Becoz, req.body.users is the list or the array of users whom i want to add in the group ), so , var users is an javascript array instead of an array
 
   if (users.length < 2) {  //object length
     return res

@@ -22,7 +22,7 @@ import { ChatState } from "../../Context/ChatProvider";
 import UserBadgeItem from "../userAvatar/UserBadgeItem";
 import UserListItem from "../userAvatar/UserListItem";
 
-const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
+const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain ,socket }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [groupChatName, setGroupChatName] = useState();
   const [search, setSearch] = useState("");
@@ -83,10 +83,18 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
         config
       );
 
+          // Emit with all necessary data
+      socket.emit('rename-group', {
+        chatId: selectedChat._id,
+        newGroupName: groupChatName,
+        updatedChat: data,
+        sender: user
+      }); //sent an object ,destructure with the same key name in server.js
+      
       
       // setSelectedChat("");
       setSelectedChat(data);
-      setFetchAgain(!fetchAgain);
+      setFetchAgain(!fetchAgain);  //toggle hoga,so,lifting up states concept se parent will re-render and all it's children will also re-render with the new updated prop ,so for the person who changed the name of the group , both the mychats (left side)and chatbox(right side)  will re-render with new name of the chat
       setRenameLoading(false);
     } catch (error) {
       toast({
@@ -221,14 +229,16 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
           </ModalHeader>
 
           <ModalCloseButton />
+
           <ModalBody d="flex" flexDir="column" alignItems="center">
             <Box w="100%" d="flex" flexWrap="wrap" pb={3}>
               {selectedChat.users.map((u) => (
                 <UserBadgeItem
                   key={u._id}
-                  user={u}
+                  u={u}
                   admin={selectedChat.groupAdmin}
                   handleFunction={() => handleRemove(u)}
+                  user={user}
                 />
               ))}
             </Box>
