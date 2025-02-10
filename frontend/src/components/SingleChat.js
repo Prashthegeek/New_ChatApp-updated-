@@ -1026,7 +1026,7 @@ import ScrollableChat from "./ScrollableChat";
 import UpdateGroupChatModal from "./miscellaneous/UpdateGroupChatModal";
 import { ChatState } from "../Context/ChatProvider";
 import { io } from "socket.io-client";
-import Lottie from "react-lottie";
+import Lottie from "lottie-react";
 import animationData from "../animations/typing.json";
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
@@ -1051,12 +1051,6 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const typingTimeoutRef = useRef();
   const { selectedChat, setSelectedChat, user, notification, setNotification } = ChatState();
 
-  const typingAnimationOptions = {
-    loop: true,
-    autoplay: true,
-    animationData: animationData,
-    rendererSettings: { preserveAspectRatio: "xMidYMid slice" },
-  };
 
   // Initialize socket connection
   useEffect(() => {
@@ -1316,17 +1310,20 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     <>
       {selectedChat ? (
         <Box 
-          height="100%" 
+          height="100%"
+          width="100%"  // Added full width
           display="flex" 
           flexDirection="column"
           bg="white"
           borderRadius="lg"
           boxShadow="sm"
+          position="relative" // Added for proper sizing
         >
           {/* Chat Header */}
           <Box
             py={3}
             px={4}
+            width="100%" // Added full width
             display="flex"
             alignItems="center"
             justifyContent="space-between"
@@ -1342,9 +1339,9 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                 size="sm"
               />
               <Text fontSize="xl" fontWeight="600">
-                {!selectedChat.isGroupChat   //not group chat
-                  ? getSender(user, selectedChat.users)  //name of sender show
-                  : selectedChat.chatName} {/*if chat,then name of the group shown */}
+                {!selectedChat.isGroupChat
+                  ? getSender(user, selectedChat.users)
+                  : selectedChat.chatName}
               </Text>
             </Box>
             {selectedChat.isGroupChat ? (
@@ -1367,34 +1364,59 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             p={3}
             bg="gray.50"
             flex="1"
+            width="100%" // Added full width
+            position="relative" // Added for proper sizing
             overflowY="hidden"
           >
             {loading ? (
               <Spinner size="xl" w={20} h={20} alignSelf="center" margin="auto" />
             ) : (
-              <Box className="messages" overflowY="auto">
-                <ScrollableChat    //{/*scrollable is here , passed the messages array to the scrollable chat as prop, also sending setMesages so that in scrollable chats -> one can even change the messages state (used when deletion happened ) ,then messages the array state me changes kiya and then ui me re-render kiya.*/
-                messages={messages} 
-                setMessages={setMessages}              
-                socket={socketRef.current}    //sending the instance of the socketRef(becoz ,unnecessary render nhi hoga and consistency bana rahega),so,scrollable chat can also use it ,used there in delete message emit event , 
-                selectedChat={selectedChat}    //while emiting the deletemessage event to the server ,server ko hum log also send the current chat id ,since, server usi room(selected chat ) me delete message event transfer karega to all the user/users ,kyuki server is centralized ,it dont know which room ka message we are deleting and we also dont have selected chat variable in scrollable chat 
-                //all these props will be sent as a whole in the form of object, so, while receiving the props in scrollable chat ,we would destructure them with the same key name as mentioned here (since, object )
-                fetchAgain={fetchAgain}
-                setFetchAgain={setFetchAgain}
-                //sent fetchAgain and setFetchAgain ,becoz,when the message successfully deleted ,then for the current user ,fetchAgain ko update kar do,so,chatPage  re-render karega and hence -> chatBox and mychats dono me updation hoga ,concept of lifting state up(askify notes me study )
+              <Box 
+                className="messages" 
+                overflowY="auto"
+                width="100%" // Added full width
+                height="100%" // Added full height
+              >
+                <ScrollableChat 
+                  messages={messages} 
+                  setMessages={setMessages}              
+                  socket={socketRef.current}    
+                  selectedChat={selectedChat}    
+                  fetchAgain={fetchAgain}
+                  setFetchAgain={setFetchAgain}
                 />
               </Box>
             )}
 
+
             {/* Input Area */}
-            <FormControl onKeyDown={(e) => e.key === "Enter" && sendMessage()} isRequired mt={3}>
-              {isTyping && (
-                <Lottie
-                  options={typingAnimationOptions}
-                  width={70}
-                  style={{ marginBottom: 15, marginLeft: 0 }}
-                />
-              )}
+            <FormControl 
+  onKeyDown={(e) => e.key === "Enter" && sendMessage()} 
+  isRequired 
+  mt={3}
+  width="100%"
+  position="relative"
+>
+{isTyping && (
+    <div
+      style={{
+        position: "absolute",
+        bottom: "100%",
+        left: "0",
+        width: "50px", // Default size for small screens
+      }}
+    >
+      {/* Responsive Lottie Animation */}
+      <Lottie
+        animationData={animationData}
+        loop
+        autoplay
+        style={{ width: "100%" }} // Makes the animation responsive
+      />
+    </div>
+  )}
+
+
 
               {/* File Preview */}
               {file && (
@@ -1491,16 +1513,18 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
         <InputRightElement width="4.5rem">
           <IconButton
-            icon={<FaRegSmile />}  //to depict emoji
+            icon={<FaRegSmile />}  // Replaced FontAwesomeIcon with Chakra UI icon
             variant="ghost"
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             mr={1}
           />
-          <IconButton
-            colorScheme="blue"
-            icon={<ArrowRightIcon />}
-            onClick={sendMessage}
-          />
+           <IconButton
+              colorScheme="blue"
+              icon={<ArrowRightIcon />}
+              size={{ base: "sm", md: "md" }}
+              onClick={sendMessage}
+              aria-label="Send message"
+            />
         </InputRightElement>
       </InputGroup>
             </FormControl>
