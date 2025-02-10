@@ -1021,7 +1021,7 @@ import {
 } from "@chakra-ui/react";
 import { ArrowBackIcon, ArrowRightIcon, AttachmentIcon, CloseIcon } from "@chakra-ui/icons";
 import { getSender, getSenderFull } from "../config/ChatLogics";
-import ProfileModal from "./miscellaneous/ProfileModal";
+import SenderProfileModal from "./miscellaneous/SenderProfileModal";
 import ScrollableChat from "./ScrollableChat";
 import UpdateGroupChatModal from "./miscellaneous/UpdateGroupChatModal";
 import { ChatState } from "../Context/ChatProvider";
