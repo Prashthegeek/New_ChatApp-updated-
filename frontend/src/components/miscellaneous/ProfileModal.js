@@ -58,7 +58,7 @@ const ProfileModal = ({ children}) => {
         // Now update the user's picture in your backend
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));  //becoz, localStorage.getItem returns a string , and now ,i need obj so that next line me dot operator can be used
         const token = userInfo?.token;
-        const updateRes = await fetch("http://localhost:5000/api/user/update-pic", {
+        const updateRes = await fetch("https://convohub-l7f3.onrender.com/api/user/update-pic", {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

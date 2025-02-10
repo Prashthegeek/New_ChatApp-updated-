@@ -1,7 +1,7 @@
 {
   "name": "frontend",
   "version": "0.1.0",
-  "proxy": "http://localhost:5000",
+  "proxy": "https://convohub-l7f3.onrender.com",
   "private": true,
   "dependencies": {
     "@chakra-ui/icons": "^1.0.13",
@@ -30,8 +30,9 @@
     "socket.io-client": "^4.1.2",
     "web-vitals": "^1.0.1"
   },
+  
   "scripts": {
-    "start": "react-scripts --openssl-legacy-provider start",
+    "start": "react-scripts --openssl-legacy-provider start",  
     "build": "react-scripts --openssl-legacy-provider build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -55,3 +56,4 @@
     ]
   }
 }
+

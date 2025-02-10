@@ -26,7 +26,7 @@ const Signup = () => {
    //for signup with google(oAuth)
    const handleGoogleSignIn = () => {
     // Redirect to the backend's Google OAuth endpoint
-    window.location.href = "http://localhost:5000/api/user/google";
+    window.location.href = "https://convohub-l7f3.onrender.com/api/user/google";
   };
 
   const submitHandler = async () => {

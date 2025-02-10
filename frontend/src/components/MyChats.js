@@ -192,7 +192,7 @@ const MyChats = ({ fetchAgain }) => {  //fetchAgain is accepted as a prop just b
         },
       };
 
-      const { data } = await axios.get("http://localhost:5000/api/chat", config);//backend me find method se output is returned which is an array (as find returns an array)
+      const { data } = await axios.get("https://convohub-l7f3.onrender.com/api/chat", config);//backend me find method se output is returned which is an array (as find returns an array)
       setChats(data || []); // if ,data aaya hai from backend ,then chat will be an array and  each element of the array is an object (will have multiple fields like id ,name,etc,which are mentioned in chat schema)
     } catch (error) {
       toast({

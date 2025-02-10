@@ -140,7 +140,7 @@ const app = express();
 
 
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: "https://convohub-l7f3.onrender.com",
   credentials: true,
 }));
 
@@ -198,7 +198,7 @@ if (process.env.NODE_ENV === "production") {
 app.use(notFound);
 app.use(errorHandler);
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
   try {
@@ -224,7 +224,7 @@ const startServer = async () => {
       pingTimeout: 60000,
       pingInterval: 25000,
       cors: {
-        origin: "http://localhost:3000",
+        origin: "https://convohub-l7f3.onrender.com",
         credentials: true
       } 
     });

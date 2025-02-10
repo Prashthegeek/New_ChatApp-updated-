@@ -1033,7 +1033,7 @@ import Picker from '@emoji-mart/react';
 import { SmallAddIcon } from "@chakra-ui/icons";
 import axios from "axios";
 
-const ENDPOINT = "http://localhost:5000";
+const ENDPOINT = "https://convohub-l7f3.onrender.com";
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const [messages, setMessages] = useState([]);

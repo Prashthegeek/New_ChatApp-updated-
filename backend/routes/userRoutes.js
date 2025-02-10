@@ -51,7 +51,7 @@ router.get('/google/redirect', passport.authenticate('google') , (req,res)=>{//m
   );
 
   // Redirect the user to the frontend with the token in the URL
-  const BASE_URI = process.env.frontendUrl || 'http://localhost:3000';
+  const BASE_URI = process.env.frontendUrl || 'https://convohub-l7f3.onrender.com';
   console.log("down to base uri")
   const frontendUrl = `${BASE_URI}/google-redirect?token=${token}&id=${user.id}&name=${user.name}&email=${user.email}&pic=${user.pic}`;  //not a dynamic route,?token=... is the part of /google-redirect so , in frontend(in app.jsx) Route path="/google-redirect will do , since, agar direct / ke baad value likhe hote ,then route me /../:something lena parta like in rooms/:roomId ,since, in url / ke direct baad value of roomId was used 
   console.log("down to frontend uri")
