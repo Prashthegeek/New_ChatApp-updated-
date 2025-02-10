@@ -1310,6 +1310,8 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
       fetchMessages();
     }
   }, [selectedChat]);
+
+
   return (
     <>
       {selectedChat ? (
@@ -1340,9 +1342,9 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                 size="sm"
               />
               <Text fontSize="xl" fontWeight="600">
-                {!selectedChat.isGroupChat
-                  ? getSender(user, selectedChat.users)
-                  : selectedChat.chatName}
+                {!selectedChat.isGroupChat   //not group chat
+                  ? getSender(user, selectedChat.users)  //name of sender show
+                  : selectedChat.chatName} {/*if chat,then name of the group shown */}
               </Text>
             </Box>
             {selectedChat.isGroupChat ? (
@@ -1353,7 +1355,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                 socket={socketRef.current}
               />
             ) : (
-              <ProfileModal user={getSenderFull(user, selectedChat.users)} />
+              <SenderProfileModal user={getSenderFull(user, selectedChat.users)} />
             )}
           </Box>
 

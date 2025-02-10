@@ -99,7 +99,7 @@ export const isSameUser = (messages, currentMessage, index) => {
 // Get the name of the other user in a one-on-one chat
 
 
-export const getSender = (loggedUser, users) => {
+export const getSender = (loggedUser, users) => {  //users is an array
   if (!loggedUser || !users || users.length < 2) return null;
   return users[0]._id === loggedUser._id ? users[1].name : users[0].name;
 };
@@ -108,5 +108,5 @@ export const getSender = (loggedUser, users) => {
 //not just name ,return the full details(obj) of the other user
 export const getSenderFull = (loggedUser, users) => {  //users is an array containing multiple objects ,each objects refers to individual persons in the chats
   if (!loggedUser || !users || users.length < 2) return null;
-  return users[0]._id === loggedUser._id ? users[1] : users[0];
+  return users[0]._id === loggedUser._id ? users[1] : users[0];   //sender ka full information(in the form of object) return kar raha hai,becoz,users-> array of objects.so each elem is an object
 };
