@@ -5,7 +5,7 @@ const userSchema = mongoose.Schema(
   {
     name: { type: "String", required: true },
     email: { type: "String", unique: true, required: true },
-    password: { type: "String", required: true },
+    password: { type: "String", required: false },  //requirement is false as signup with google doesn't require password, if it is not made false, then everytime we signup, we'd get error saying paasword is required while signup with google
     pic: {
       type: "String",
       required: false,

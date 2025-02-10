@@ -5,7 +5,6 @@ const UserVerify = require("../models/userVerify.models.js");
 const jwt = require('jsonwebtoken');
 
 //for email verification
-const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 
 
