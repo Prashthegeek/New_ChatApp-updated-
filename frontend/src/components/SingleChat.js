@@ -1032,6 +1032,8 @@ import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
 import { SmallAddIcon } from "@chakra-ui/icons";
 import axios from "axios";
+import { FaRegSmile } from "react-icons/fa";
+
 
 const ENDPOINT = "http://localhost:5000";
 
@@ -1489,7 +1491,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
         <InputRightElement width="4.5rem">
           <IconButton
-            icon={<SmallAddIcon />}  // Replaced FontAwesomeIcon with Chakra UI icon
+            icon={<FaRegSmile />}  // Replaced FontAwesomeIcon with Chakra UI icon
             variant="ghost"
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             mr={1}
