@@ -1026,11 +1026,10 @@ import ScrollableChat from "./ScrollableChat";
 import UpdateGroupChatModal from "./miscellaneous/UpdateGroupChatModal";
 import { ChatState } from "../Context/ChatProvider";
 import { io } from "socket.io-client";
-import Lottie from "react-lottie";
+import Lottie from "lottie-react";
 import animationData from "../animations/typing.json";
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
-import { SmallAddIcon } from "@chakra-ui/icons";
 import axios from "axios";
 import { FaRegSmile } from "react-icons/fa";
 
@@ -1053,12 +1052,6 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const typingTimeoutRef = useRef();
   const { selectedChat, setSelectedChat, user, notification, setNotification } = ChatState();
 
-  const typingAnimationOptions = {
-    loop: true,
-    autoplay: true,
-    animationData: animationData,
-    rendererSettings: { preserveAspectRatio: "xMidYMid slice" },
-  };
 
   // Initialize socket connection
   useEffect(() => {
@@ -1398,18 +1391,32 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
             {/* Input Area */}
             <FormControl 
-              onKeyDown={(e) => e.key === "Enter" && sendMessage()} 
-              isRequired 
-              mt={3}
-              width="100%" // Added full width
-            >
-              {isTyping && (
-                <Lottie
-                  options={typingAnimationOptions}
-                  width={70}
-                  style={{ marginBottom: 15, marginLeft: 0 }}
-                />
-              )}
+  onKeyDown={(e) => e.key === "Enter" && sendMessage()} 
+  isRequired 
+  mt={3}
+  width="100%"
+  position="relative"
+>
+{isTyping && (
+    <div
+      style={{
+        position: "absolute",
+        bottom: "100%",
+        left: "0",
+        width: "50px", // Default size for small screens
+      }}
+    >
+      {/* Responsive Lottie Animation */}
+      <Lottie
+        animationData={animationData}
+        loop
+        autoplay
+        style={{ width: "100%" }} // Makes the animation responsive
+      />
+    </div>
+  )}
+
+
 
               {/* File Preview */}
               {file && (
@@ -1511,11 +1518,13 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             mr={1}
           />
-          <IconButton
-            colorScheme="blue"
-            icon={<ArrowRightIcon />}
-            onClick={sendMessage}
-          />
+           <IconButton
+              colorScheme="blue"
+              icon={<ArrowRightIcon />}
+              size={{ base: "sm", md: "md" }}
+              onClick={sendMessage}
+              aria-label="Send message"
+            />
         </InputRightElement>
       </InputGroup>
             </FormControl>
