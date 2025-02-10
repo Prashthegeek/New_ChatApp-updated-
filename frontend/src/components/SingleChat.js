@@ -1030,8 +1030,8 @@ import Lottie from "react-lottie";
 import animationData from "../animations/typing.json";
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
-import { SmallAddIcon } from "@chakra-ui/icons";
 import axios from "axios";
+import { FaRegSmile } from "react-icons/fa";
 
 const ENDPOINT = "https://convohub-l7f3.onrender.com";
 
@@ -1491,7 +1491,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
         <InputRightElement width="4.5rem">
           <IconButton
-            icon={<SmallAddIcon />}  // Replaced FontAwesomeIcon with Chakra UI icon
+            icon={<FaRegSmile />}  //to depict emoji
             variant="ghost"
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             mr={1}
